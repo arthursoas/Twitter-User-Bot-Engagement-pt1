@@ -479,7 +479,7 @@ class Coleta(object):
     @staticmethod
     def bot_coletado(bot):
         try:
-            arquivo = open("botsColetados.txt", "a")
+            arquivo = open("ArquivosSaida/botsColetados.txt", "a")
             arquivo.write(str(bot) + "\n")
             arquivo.close()
         except IOError as e:
@@ -488,7 +488,7 @@ class Coleta(object):
     @staticmethod
     def limpar_coletados():
         try:
-            arquivo = open("botsColetados.txt", "a")
+            arquivo = open("ArquivosSaida/botsColetados.txt", "a")
             arquivo.truncate()
             arquivo.close()
         except IOError as e:
