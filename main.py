@@ -105,6 +105,7 @@ class Coleta(object):
                     print("Dados salvos")
 
                     self.bot_coletado(bot)
+                    self.limpar_dicionarios()
                     print("Coleta finalizada para o bot " + str(bot))
 
                 # ESPERA 1 DIA A PARTIR DO INÍCIO DA COLETA PARA EXECUTAR NOVAMENTE
@@ -181,6 +182,17 @@ class Coleta(object):
             print("Tipo inesperado")
 
         arquivo.close()
+
+    def limpar_dicionarios(self):
+        # self.dicRetweets.clear()
+        self.dicRespostas.clear()
+        self.dicMencoes.clear()
+        self.dicSeguidores.clear()
+        # self.dicTempoVinculo.clear()
+        self.dicLimites.clear()
+        self.dicSeguidoresVinculados.clear()
+        self.dicServidoresDesvinculados.clear()
+        self.dicPosts.clear()
 
     @staticmethod
     def salvar_posts(bot, posts):
