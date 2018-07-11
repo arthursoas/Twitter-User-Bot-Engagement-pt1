@@ -32,10 +32,10 @@ class Coleta(object):
             self.primeira_execucao(lista_de_bots)
 
             while True:
-                self.limpar_coletados()
-
                 # HORÁRIO DE INÍCIO DA COLETA
                 inicio_coleta = datetime.now()
+
+                lista_de_bots = self.obter_bots()
 
                 for bot in lista_de_bots:
                     # DADOS DO BOT
@@ -108,6 +108,7 @@ class Coleta(object):
                     self.limpar_dicionarios()
                     print("Coleta finalizada para o bot " + str(bot))
 
+                self.limpar_coletados()
                 # ESPERA 1 DIA A PARTIR DO INÍCIO DA COLETA PARA EXECUTAR NOVAMENTE
                 fim_coleta = datetime.now()
                 tempo_processamento_coleta = (fim_coleta - inicio_coleta).total_seconds()
