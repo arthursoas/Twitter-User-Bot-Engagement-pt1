@@ -19,7 +19,7 @@ class Coleta(object):
         # self.dicTempoVinculo = {}
         self.dicLimites = {}
         self.dicSeguidoresVinculados = {}
-        self.dicServidoresDesvinculados = {}
+        self.dicSeguidoresDesvinculados = {}
         self.dicPosts = {}
 
     def teste(self):
@@ -160,9 +160,9 @@ class Coleta(object):
                 arquivo.write(str(seguidor) + "," +
                               str(self.dicSeguidoresVinculados[seguidor]['vinculacao']) + "\n")
         elif tipo == "seguidoresDesvinculacao":
-            for seguidor in self.dicServidoresDesvinculados:
+            for seguidor in self.dicSeguidoresDesvinculados:
                 arquivo.write(str(seguidor) + "," +
-                              str(self.dicServidoresDesvinculados[seguidor]['desvinculacao']) + "\n")
+                              str(self.dicSeguidoresDesvinculados[seguidor]['desvinculacao']) + "\n")
         # elif tipo == "tempoVinculo":
         #     arquivo.truncate()
         #     for tempoVinculo in self.dicTempoVinculo:
@@ -192,7 +192,7 @@ class Coleta(object):
         # self.dicTempoVinculo.clear()
         self.dicLimites.clear()
         self.dicSeguidoresVinculados.clear()
-        self.dicServidoresDesvinculados.clear()
+        self.dicSeguidoresDesvinculados.clear()
         self.dicPosts.clear()
 
     @staticmethod
@@ -506,19 +506,39 @@ class Coleta(object):
         seguidores_vinculados = self.obter_seguidor_vinculacao(bot)
         seguidores_desvinculados = self.obter_seguidor_desvinculacao(bot)
 
+        seguidores = sorted(seguidores)
+        seguidores_vinculados = sorted(seguidores_vinculados)
+        seguidores_desvinculados = sorted(seguidores_desvinculados)
+
         # ADICIONA VÍNCULO A NOVOS SEGUIDORES DO ROBÔ
         horario_vinculacao = datetime.now()
         for seguidor in seguidores:
-            if str(seguidor) not in seguidores_vinculados['ids']:
+            if self.busca_binaria(seguidores_vinculados, seguidor) is False:
                 self.dicSeguidoresVinculados[seguidor] = {'vinculacao': horario_vinculacao}
+
 
         # ADICIONA DESVÍNCULO A PESSOAS QUE DEIXARAM DE SEGUIR O ROBÔ
         horario_desvinculacao = datetime.now()
-        for segVinculado in seguidores_vinculados['seguidores']:
-            if str(segVinculado[0]) not in str(seguidores):
-                if str(segVinculado[0]) not in seguidores_desvinculados:
-                    self.dicServidoresDesvinculados[segVinculado[0]] = {'desvinculacao': horario_desvinculacao}
+        for seg_vinculado in seguidores_vinculados:
+            if self.busca_binaria(seguidores, seg_vinculado) is False:
+                if self.busca_binaria(seguidores_desvinculados, seg_vinculado) is False:
+                    self.dicSeguidoresDesvinculados[seg_vinculado] = {'desvinculacao': horario_desvinculacao}
 
+    @staticmethod
+    def busca_binaria(lista, valor):
+        first = 0
+        last = len(lista) - 1
+
+        while first <= last:
+            mid = (first + last) // 2
+            if lista[mid] == valor:
+                return True
+            else:
+                if valor < lista[mid]:
+                    last = mid - 1
+                else:
+                    first = mid + 1
+        return False
 
 c = Coleta()
 # c.teste()
