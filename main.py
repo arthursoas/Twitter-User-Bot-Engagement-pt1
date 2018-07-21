@@ -277,7 +277,6 @@ class Coleta(object):
             for line in lines:
                 dados = line.split(",")
                 retorno.append(int(dados[0]))
-
             return retorno
         except IOError as e:
             print("Erro ao ler os limites: " + str(e))
@@ -294,7 +293,6 @@ class Coleta(object):
             for line in lines:
                 dados = line.split(",")
                 retorno.append(int(dados[0]))
-
             return retorno
         except IOError as e:
             print("Erro ao ler os limites: " + str(e))
