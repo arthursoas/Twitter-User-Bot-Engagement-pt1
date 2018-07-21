@@ -272,14 +272,13 @@ class Coleta(object):
             lines = file.readlines()
             file.close()
 
-            seguidores = []
-            apenas_ids = []
+            lines.pop(0)
+            retorno = []
             for line in lines:
                 dados = line.split(",")
-                seguidores.append(dados)
-                apenas_ids.append(dados[0])
+                retorno.append(int(dados[0]))
 
-            return {'seguidores': seguidores, 'ids': apenas_ids}
+            return retorno
         except IOError as e:
             print("Erro ao ler os limites: " + str(e))
 
@@ -290,10 +289,11 @@ class Coleta(object):
             lines = file.readlines()
             file.close()
 
+            lines.pop(0)
             retorno = []
             for line in lines:
                 dados = line.split(",")
-                retorno.append(dados[0])
+                retorno.append(int(dados[0]))
 
             return retorno
         except IOError as e:
@@ -489,8 +489,8 @@ class Coleta(object):
     @staticmethod
     def limpar_coletados():
         try:
-            arquivo = open("ArquivosSaida/botsColetados.txt", "a")
-            arquivo.truncate()
+            arquivo = open("ArquivosSaida/botsColetados.txt", "w")
+            arquivo.write("")
             arquivo.close()
         except IOError as e:
             print("Erro ao limpar bots coletados: " + str(e))
@@ -515,7 +515,6 @@ class Coleta(object):
         for seguidor in seguidores:
             if self.busca_binaria(seguidores_vinculados, seguidor) is False:
                 self.dicSeguidoresVinculados[seguidor] = {'vinculacao': horario_vinculacao}
-
 
         # ADICIONA DESVÍNCULO A PESSOAS QUE DEIXARAM DE SEGUIR O ROBÔ
         horario_desvinculacao = datetime.now()
