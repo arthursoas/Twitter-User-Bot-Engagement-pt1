@@ -437,7 +437,7 @@ class Coleta(object):
             criado_em.close()
 
             seguidores = open("ArquivosSaida/" + str(bot) + "/seguidores.txt", "w")
-            seguidores.write("id,screenName,dataCriacao,numeroLikes\n")
+            seguidores.write("id\n")
             seguidores.close()
 
             # retweets = open("ArquivosSaida/" + str(bot) + "/retweets.txt", "w")
@@ -465,11 +465,11 @@ class Coleta(object):
             posts.close()
 
             seguidores_vinculacao = open("ArquivosSaida/" + str(bot) + "/seguidoresVinculacao.txt", "w")
-            seguidores_vinculacao.write("idUsuario,nome,dataCriacao,numeroLikes,dataVinculacao\n")
+            seguidores_vinculacao.write("idUsuario,ataVinculacao\n")
             seguidores_vinculacao.close()
 
             seguidores_desvinculacao = open("ArquivosSaida/" + str(bot) + "/seguidoresDesvinculacao.txt", "w")
-            seguidores_desvinculacao.write("idUsuario,nome,dataDesvinculacao\n")
+            seguidores_desvinculacao.write("idUsuario,dataDesvinculacao\n")
             seguidores_desvinculacao.close()
 
         except IOError as e:
