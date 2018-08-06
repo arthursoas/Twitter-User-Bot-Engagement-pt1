@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timedelta
 from time import strptime
 import os
+from pathlib import Path
 
 
 class Coleta(object):
@@ -12,11 +13,9 @@ class Coleta(object):
         self.api = conexaoTwitter.Open()
 
         # CRIAÇÃO DE DICIONÁRIOS
-        # self.dicRetweets = {}
         self.dicRespostas = {}
         self.dicMencoes = {}
         self.dicSeguidores = {}
-        # self.dicTempoVinculo = {}
         self.dicLimites = {}
         self.dicSeguidoresVinculados = {}
         self.dicSeguidoresDesvinculados = {}
@@ -40,6 +39,10 @@ class Coleta(object):
                 for bot in lista_de_bots:
                     # DADOS DO BOT
                     dados_bot = self.obter_dados_bot(bot)
+                    
+                    if dados_bot is None:
+                        continue
+
                     nome_bot = dados_bot[0]
 
                     print("Coleta iniciada para o bot " + str(nome_bot))
@@ -52,11 +55,8 @@ class Coleta(object):
                     # ESTRUTURAÇÃO DOS DICIONÁRIOS
                     for seguidor in seguidores:
                         self.dicSeguidores[seguidor] = {'coletado_em': str(coleta_seguidores)}
-                        # self.dicRetweets[seguidor.id] = []
                         self.dicRespostas[seguidor] = []
                         self.dicMencoes[seguidor] = []
-                        # self.dicTempoVinculo[seguidor.id] = {
-                        #     'criacao': self.converter_formato_data(seguidor.created_at)}
 
                     self.valida_vinculacao_desvinculacao(bot, seguidores)
 
@@ -85,19 +85,13 @@ class Coleta(object):
 
                     id_posts = id_posts + posts_antigos
 
-                    # COLETA DE RETWEETS
-                    # self.obter_retweets(id_posts)
-                    # print("Retweets coletados")
-
                     # COLETA DE MENCOES E RESPOSTAS
                     self.obter_mencoes_respostas_bot(nome_bot, id_posts, int(self.dicLimites['interacoes']))
                     print("Menções e respostas coletadas")
 
                     self.salvar_dicionario(bot, "seguidores")
-                    # self.salvar_dicionario(bot, "retweets")
                     self.salvar_dicionario(bot, "respostas")
                     self.salvar_dicionario(bot, "mencoes")
-                    # self.salvar_dicionario(bot, "tempoVinculo")
                     self.salvar_dicionario(bot, "limites")
                     self.salvar_dicionario(bot, "seguidoresVinculacao")
                     self.salvar_dicionario(bot, "seguidoresDesvinculacao")
@@ -126,6 +120,10 @@ class Coleta(object):
             for bot in lista_de_bots:
                 # DADOS DO BOT
                 dados_bot = self.obter_dados_bot(bot)
+
+                if dados_bot is None:
+                    continue
+
                 criacao_bot = dados_bot[1]
 
                 # CRIAÇÃO DA PERSISTÊNCIA DO ROBÔ
@@ -146,11 +144,6 @@ class Coleta(object):
                 for i in range(0, len(self.dicRespostas[resposta])):
                     arquivo.write(str(resposta) + "," + str(self.dicRespostas[resposta][i]['id']) +
                                   "," + str(self.dicRespostas[resposta][i]['data']) + "\n")
-        # elif tipo == "retweets":
-        #     for retweet in self.dicRetweets:
-        #         for i in range(0, len(self.dicRetweets[retweet])):
-        #             arquivo.write(str(retweet) + "," + str(self.dicRetweets[retweet][i]['data']) +
-        #                           "," + str(self.dicRetweets[retweet][i]['post']) + "\n")
         elif tipo == "seguidores":
             arquivo.write("id,screenName,dataCriacao,numeroLikes\n")
             for seguidor in self.dicSeguidores:
@@ -163,10 +156,6 @@ class Coleta(object):
             for seguidor in self.dicSeguidoresDesvinculados:
                 arquivo.write(str(seguidor) + "," +
                               str(self.dicSeguidoresDesvinculados[seguidor]['desvinculacao']) + "\n")
-        # elif tipo == "tempoVinculo":
-        #     arquivo.truncate()
-        #     for tempoVinculo in self.dicTempoVinculo:
-        #         arquivo.write(str(tempoVinculo) + "," + str(self.dicTempoVinculo[tempoVinculo]['criacao']) + "\n")
         elif tipo == "mencoes":
             for mencao in self.dicMencoes:
                 for i in range(0, len(self.dicMencoes[mencao])):
@@ -185,11 +174,9 @@ class Coleta(object):
         arquivo.close()
 
     def limpar_dicionarios(self):
-        # self.dicRetweets.clear()
         self.dicRespostas.clear()
         self.dicMencoes.clear()
         self.dicSeguidores.clear()
-        # self.dicTempoVinculo.clear()
         self.dicLimites.clear()
         self.dicSeguidoresVinculados.clear()
         self.dicSeguidoresDesvinculados.clear()
@@ -228,8 +215,6 @@ class Coleta(object):
 
             except error.TwitterError as e:
                 print("Erro durante coleta de posts: " + str(e.message))
-                print("-- Aguardando 15 minutos para nova consulta --")
-                time.sleep(900)
 
             # Termina a coleta se não houverem mais posts
             if len(mencoes_bot) == 0:
@@ -252,7 +237,7 @@ class Coleta(object):
             objeto_bot = self.api.GetUser(user_id=bot)
             return [objeto_bot.screen_name, objeto_bot.created_at]
         except error.TwitterError as e:
-            print("Erro durante coleta de posts: " + str(e.message))
+            print("Erro durante coleta de dados do usuário: " + str(e.message))
 
     @staticmethod
     def obter_limites(bot):
@@ -328,9 +313,7 @@ class Coleta(object):
                 tempo_processamento = (horario_corrente - horario_coleta).total_seconds()
                 {} if tempo_processamento > 12 else time.sleep(12 - tempo_processamento)
         except error.TwitterError as e:
-            print("Erro durante coleta de posts: " + str(e.message))
-            print("-- Aguardando 15 minutos para nova consulta --")
-            time.sleep(900)
+            print("Erro durante coleta de retweets: " + str(e.message))
 
     def obter_posts_bot(self, bot, min_id):
         max_id = 9000000000000000000
@@ -353,8 +336,6 @@ class Coleta(object):
 
             except error.TwitterError as e:
                 print("Erro durante coleta de posts: " + str(e.message))
-                print("-- Aguardando 15 minutos para nova consulta --")
-                time.sleep(900)
 
             # Termina a coleta se não houverem mais posts
             if len(timeline_bot) == 0:
@@ -431,46 +412,54 @@ class Coleta(object):
 
     def criar_arquivos_bot(self, bot, criacao_bot):
         try:
-            criado_em = open("ArquivosSaida/" + str(bot) + "/criadoEm.txt", "w")
-            criado_em.write("criadoEm\n")
-            criado_em.write(str(self.converter_formato_data(criacao_bot)))
-            criado_em.close()
+            path = "ArquivosSaida/" + str(bot) + "/criadoEm.txt"
+            if not Path(path).is_file():
+                criado_em = open(path, "w")
+                criado_em.write("criadoEm\n")
+                criado_em.write(str(self.converter_formato_data(criacao_bot)))
+                criado_em.close()
 
-            seguidores = open("ArquivosSaida/" + str(bot) + "/seguidores.txt", "w")
-            seguidores.write("id\n")
-            seguidores.close()
+            path = "ArquivosSaida/" + str(bot) + "/seguidores.txt"
+            if not Path(path).is_file():
+                seguidores = open(path, "w")
+                seguidores.write("id\n")
+                seguidores.close()
 
-            # retweets = open("ArquivosSaida/" + str(bot) + "/retweets.txt", "w")
-            # retweets.write("seguidor,dataRetweet,postRetweetado\n")
-            # retweets.close()
+            path = "ArquivosSaida/" + str(bot) + "/respostas.txt"
+            if not Path(path).is_file():
+                respostas = open(path, "w")
+                respostas.write("seguidor,idResposta,dataResposta\n")
+                respostas.close()
 
-            respostas = open("ArquivosSaida/" + str(bot) + "/respostas.txt", "w")
-            respostas.write("seguidor,idResposta,dataResposta\n")
-            respostas.close()
+            path = "ArquivosSaida/" + str(bot) + "/mencoes.txt"
+            if not Path(path).is_file():
+                mencoes = open(path, "w")
+                mencoes.write("seguidor,idResposta,dataMencao\n")
+                mencoes.close()
 
-            mencoes = open("ArquivosSaida/" + str(bot) + "/mencoes.txt", "w")
-            mencoes.write("seguidor,idResposta,dataMencao\n")
-            respostas.close()
+            path = "ArquivosSaida/" + str(bot) + "/limites.txt"
+            if not Path(path).is_file():
+                limites = open(path, "w")
+                limites.write("tipoLimite,valor\n")
+                limites.write("posts,0\ninteracoes,0\n")
+                limites.close()
 
-            # tempoVinculo = open("ArquivosSaida/" + str(bot) + "/tempoVinculo.txt", "w")
-            # tempoVinculo.write("seguidor,primeiraInteracao,ultimaInteracao\n")
-            # tempoVinculo.close()
+            path = "ArquivosSaida/" + str(bot) + "/posts.txt"
+            if not Path(path).is_file():
+                posts = open(path, "w")
+                posts.close()
 
-            limites = open("ArquivosSaida/" + str(bot) + "/limites.txt", "w")
-            limites.write("tipoLimite,valor\n")
-            limites.write("posts,0\ninteracoes,0\n")
-            limites.close()
+            path = "ArquivosSaida/" + str(bot) + "/seguidoresVinculacao.txt"
+            if not Path(path).is_file():
+                seguidores_vinculacao = open(path, "w")
+                seguidores_vinculacao.write("idUsuario,ataVinculacao\n")
+                seguidores_vinculacao.close()
 
-            posts = open("ArquivosSaida/" + str(bot) + "/posts.txt", "w")
-            posts.close()
-
-            seguidores_vinculacao = open("ArquivosSaida/" + str(bot) + "/seguidoresVinculacao.txt", "w")
-            seguidores_vinculacao.write("idUsuario,ataVinculacao\n")
-            seguidores_vinculacao.close()
-
-            seguidores_desvinculacao = open("ArquivosSaida/" + str(bot) + "/seguidoresDesvinculacao.txt", "w")
-            seguidores_desvinculacao.write("idUsuario,dataDesvinculacao\n")
-            seguidores_desvinculacao.close()
+            path = "ArquivosSaida/" + str(bot) + "/seguidoresDesvinculacao.txt"
+            if not Path(path).is_file():
+                seguidores_desvinculacao = open(path, "w")
+                seguidores_desvinculacao.write("idUsuario,dataDesvinculacao\n")
+                seguidores_desvinculacao.close()
 
         except IOError as e:
             print("Erro ao criar arquivos do bot:" + str(e))
@@ -538,5 +527,4 @@ class Coleta(object):
         return False
 
 c = Coleta()
-# c.teste()
 c.realizar_coleta()
